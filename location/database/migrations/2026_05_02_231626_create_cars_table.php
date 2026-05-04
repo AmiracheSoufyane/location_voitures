@@ -16,6 +16,7 @@ return new class extends Migration
             $table->string('registration', 30)->unique(); // immatriculation
             $table->string('fuel_type', 30);       // carburant
             $table->integer('mileage');            
+            $table->integer('rest')->default(0);            
             $table->enum('status', ['disponible', 'loué', 'maintenance']);
             $table->decimal('price_per_day', 10, 2); 
             $table->text('comment')->nullable();   // commentaire
