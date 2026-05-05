@@ -21,4 +21,8 @@ class Client extends Model
         'national_id_image_front',
         'national_id_image_back',
     ];
+    
+    public function reservations(){
+        return $this->hasMany(Reservation::class,'client_id');
+    }
 }
