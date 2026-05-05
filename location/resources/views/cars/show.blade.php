@@ -71,7 +71,10 @@
                         Supprimer
                     </button>
                 </form>
-
+                <a href="{{ route('maintenance.index', $car->id) }}"
+                    class="bg-yellow-600 text-white px-4 py-2 rounded-lg hover:bg-yellow-700">
+                    Maintenace
+                </a>
             </div>
 
         </div>

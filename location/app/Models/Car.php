@@ -23,6 +23,9 @@ class Car extends Model
     public function notifications(){
         return $this->hasMany(Notification::class,'car_id');
     }
+    public function maintenances(){
+        return $this->hasMany(Maintenance::class,'car_id');
+    }
     public function reservations(){
         return $this->hasMany(Reservation::class,'car_id');
     }

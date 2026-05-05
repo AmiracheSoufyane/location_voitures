@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\carsController;
+use App\Http\Controllers\MaintenancesController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -21,4 +22,21 @@ Route::controller(CarsController::class)->group(function () {
     Route::get('/cars/{id}/edit', 'edit')->name('cars.edit');
     Route::put('/cars/{id}/edit', 'update')->name('cars.update');
     Route::delete('/cars/{id}/delete', 'destroy')->name('cars.destroy');
+});
+
+// Route::controller(MaintenancesController::class)->group(function () {
+//     Route::get('/maintenance/{id}', 'index')->name('maintenance.index');
+//     Route::get('/maintenance/create/{id}', 'create')->name('maintenance.create');
+//     Route::get('/maintenance/edit/{id}', 'edit')->name('maintenance.edit');
+//     Route::post('/maintenance', 'store')->name('maintenance.store');
+//     Route::put('/maintenance/{id}', 'update')->name('maintenance.update');
+//     Route::delete('/maintenance/{id}', 'destroy')->name('maintenance.destroy');
+// });
+Route::controller(MaintenancesController::class)->group(function () {
+    Route::get('/cars/{car}/maintenances', 'index')->name('maintenance.index');
+    Route::get('/cars/{car}/maintenances/create', 'create')->name('maintenance.create');
+    Route::post('/maintenances', 'store')->name('maintenances.store');
+    Route::get('/maintenances/{maintenance}/edit', 'edit')->name('maintenance.edit');
+    Route::put('/maintenances/{maintenance}', 'update')->name('maintenance.update');
+    Route::delete('/maintenances/{maintenance}', 'destroy')->name('maintenance.destroy');
 });
