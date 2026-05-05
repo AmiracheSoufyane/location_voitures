@@ -56,20 +56,13 @@
     <!-- Lien vers les Réservations -->
     <a href="{{ route('reservations.index') }}" class="flex items-center gap-3 p-2 rounded hover:bg-gray-700 mt-2">
         <i data-lucide="file-signature"></i>
-        Contrats / Réservations
+        Réservations
     </a>
             <!-- Menu Véhicules -->
             <a href="{{route('cars')}}" class="flex items-center gap-3 p-2 rounded hover:bg-gray-700">
                 <i data-lucide="car"></i>
                 Véhicules
             </a>
-
-            <!-- SECTION RÉSERVATION (NOUVEAU) -->
-            <a href="{{ route('reservations.create') }}" class="flex items-center gap-3 p-2 rounded bg-blue-600 hover:bg-blue-700 mt-4">
-                <i data-lucide="file-text"></i>
-                Nouveau Contrat
-            </a>
-
 
             <!-- Déconnexion -->
             <form action="{{route('logout')}}" method='POST' >

@@ -11,9 +11,9 @@
             <h2 class="text-2xl font-bold text-gray-800">Dossier Client : {{ $client->name }}</h2>
         </div>
         <div class="flex gap-2">
-            <button class="bg-blue-100 text-blue-700 px-4 py-2 rounded-lg font-medium hover:bg-blue-200">
-                Modifier
-            </button>
+            <a href="{{ route('clients.edit', $client->id) }}" class="bg-yellow-500 text-white px-4 py-2 rounded-lg hover:bg-yellow-600">
+                        Modifier
+                    </a>
         </div>
     </div>
 
@@ -91,3 +91,4 @@
     </div>
 </div>
 @endsection
+
