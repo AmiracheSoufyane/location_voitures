@@ -35,8 +35,10 @@ Route::controller(CarsController::class)->group(function () {
 Route::controller(MaintenancesController::class)->group(function () {
     Route::get('/cars/{car}/maintenances', 'index')->name('maintenance.index');
     Route::get('/cars/{car}/maintenances/create', 'create')->name('maintenance.create');
-    Route::post('/maintenances', 'store')->name('maintenances.store');
+    Route::post('/maintenances', 'store')->name('maintenance.store');
     Route::get('/maintenances/{maintenance}/edit', 'edit')->name('maintenance.edit');
     Route::put('/maintenances/{maintenance}', 'update')->name('maintenance.update');
     Route::delete('/maintenances/{maintenance}', 'destroy')->name('maintenance.destroy');
+    Route::get('/maintenances/needing', 'carsNeedingMaintenance')
+    ->name('maintenances.needing');
 });

@@ -18,6 +18,8 @@ class Car extends Model
     'status',
     'price_per_day',
     'image',
+    'rest',
+    'maintenance_needed'
     ];
 
     public function notifications(){
