@@ -22,6 +22,7 @@ return new class extends Migration
             $table->text('comment')->nullable();   // commentaire
             $table->string('image', 255)->nullable(); // image
 
+
             $table->timestamps(); 
         });
     }

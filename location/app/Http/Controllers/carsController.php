@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Car;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use App\Models\Notification;
 
 class carsController extends Controller
 {
@@ -108,60 +109,59 @@ class carsController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $req, string $id)
-    {
-        $car = Car::findOrFail($id);
-        $data = $req->validate([
-            'brand' => 'required|max:40',
-            'model' => 'required|max:40',
-            'mileage' => 'required|integer',
-            'status' => 'required|in:disponible,loué,maintenance',
-            'registration' => 'required|unique:cars,registration,' . $car->id,
-            'fuel_type' => 'required|in:Diesel,Essence,Hybrid,Electrique',
-            'year' => 'required|integer|min:1990|max:' . date('Y'),
-            'price_per_day' => 'required|numeric|min:0',
-            'image' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
-        ], [
-            'brand.required' => 'La marque est obligatoire.',
-            'model.required' => 'Le modèle est obligatoire.',
-            'mileage.required' => 'Le kilométrage est obligatoire.',
-            'mileage.integer' => 'Le kilométrage doit être un nombre.',
+    // app/Http/Controllers/carsController.php
 
-            'status.required' => 'Le statut est obligatoire.',
+public function update(Request $req, string $id)
+{
+    $car = Car::findOrFail($id);
 
-            'registration.required' => 'La matricule est obligatoire.',
-            'registration.unique' => 'Cette matricule existe déjà.',
+    $oldMileage = $car->mileage;
+    $newMileage = $req->mileage;
+    $diff = $newMileage - $oldMileage;
 
-            'fuel_type.required' => 'Le type de carburant est obligatoire.',
-            'fuel_type.in' => 'Type de carburant invalide.',
+    $data = $req->validate([
+        'brand' => 'required|max:40',
+        'model' => 'required|max:40',
+        'mileage' => 'required|integer',
+        'status' => 'required|in:disponible,loué,maintenance',
+        'registration' => 'required|unique:cars,registration,' . $car->id,
+        'fuel_type' => 'required|in:Diesel,Essence,Hybrid,Electrique',
+        'year' => 'required|integer|min:1990|max:' . date('Y'),
+        'price_per_day' => 'required|numeric|min:0',
+        'image' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+    ]);
 
-            'year.required' => 'L’année est obligatoire.',
-            'year.integer' => 'L’année doit être un nombre.',
-            'year.min' => 'L’année doit être >= 1990.',
-            'year.max' => 'L’année ne peut pas dépasser ' . date('Y') . '.',
+    // تحديث rest
+    $newRest = $car->rest + $diff;
+    $data['rest'] = $newRest;
 
-            'price_per_day.required' => 'Le prix est obligatoire.',
-            'price_per_day.numeric' => 'Le prix doit être un nombre.',
-            'price_per_day.min' => 'Le prix doit être positif.',
-
-            'image.image' => 'Le fichier doit être une image.',
-            'image.mimes' => 'Formats acceptés : jpg, jpeg, png.',
-            'image.max' => 'Max 2MB.',
+    // 🔥 التحقق من الحاجة للصيانة (بدون شرط alreadyNotified)
+    if ($newRest >= 10) {
+        // نضيف notification دائمًا بدون شرط
+        Notification::create([
+            'note' => 'Maintenance requise pour la voiture ' . $car->registration,
+            'car_id' => $car->id,
         ]);
-        if($req->hasFile('image')){
-            if($car->image && Storage::disk('public')->exists($car->image)){
-                Storage::disk('public')->delete($car->image);
-            }
-            $file = $req->file('image');
-            $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
-            $file->storeAs('cars', $filename, 'public');
-
-            $data['image'] = 'cars/' . $filename;
-        }
-        $car->update($data);
-        return to_route('cars')
-        ->with('success', 'Voiture modifiée avec succès');
+        
+        $data['status'] = 'maintenance';
     }
+
+    // باقي الكود (الصورة...)
+    if($req->hasFile('image')){
+        if($car->image && Storage::disk('public')->exists($car->image)){
+            Storage::disk('public')->delete($car->image);
+        }
+        $file = $req->file('image');
+        $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+        $file->storeAs('cars', $filename, 'public');
+        $data['image'] = 'cars/' . $filename;
+    }
+
+    $car->update($data);
+
+    return to_route('cars')
+        ->with('success', 'Voiture modifiée avec succès');
+}
 
     /**
      * Remove the specified resource from storage.
@@ -177,4 +177,8 @@ class carsController extends Controller
 
         return to_route('cars')->with('success', 'Voiture supprimée avec succès');
     }
+
+
+
+ 
 }

@@ -67,7 +67,7 @@
                 <i data-lucide="car"></i>
                 Véhicule
             </a>
-             <a href="{{route('maintenances.needing')}}" class="flex items-center gap-3 p-2 rounded hover:bg-gray-700 mt-4" >mintenence needing</a>
+             <a href="{{route('cars.maintenance')}}" class="flex items-center gap-3 p-2 rounded hover:bg-gray-700 mt-4" >mintenence needing</a>
 
                 <form action="{{route('logout')}}" method='POST' >
                     @csrf
@@ -76,14 +76,6 @@
                          déconnection
 
                         </button>
-                    @if(\App\Models\Car::where('maintenance_needed', true)->count() > 0)
-    <a href="{{ route('maintenances.needing') }}" class="btn btn-danger position-relative">
-        🔧 صيانة مطلوبة
-        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-warning">
-            {{ \App\Models\Car::where('maintenance_needed', true)->count() }}
-        </span>
-    </a>
-@endif
                    </form>
             @endauth
             @guest

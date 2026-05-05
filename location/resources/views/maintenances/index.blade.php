@@ -92,6 +92,7 @@
                                 {{ number_format($maintenance->cost, 2, ',', ' ') }} DH
                             </span>
                         </td>
+                        
                         <td class="px-6 py-4 whitespace-nowrap text-right">
                             <div class="flex justify-end gap-2 opacity-010 ">
                                 <a href="{{route("maintenance.edit",$maintenance->id)}}" class="p-2 text-blue-600 hover:bg-blue-100 rounded-lg transition" title="Modifier">

@@ -39,6 +39,6 @@ Route::controller(MaintenancesController::class)->group(function () {
     Route::get('/maintenances/{maintenance}/edit', 'edit')->name('maintenance.edit');
     Route::put('/maintenances/{maintenance}', 'update')->name('maintenance.update');
     Route::delete('/maintenances/{maintenance}', 'destroy')->name('maintenance.destroy');
-    Route::get('/maintenances/needing', 'carsNeedingMaintenance')
-    ->name('maintenances.needing');
+    Route::get('/cars/maintenance', 'carsNeedingMaintenance')->name('cars.maintenance');
+    
 });
