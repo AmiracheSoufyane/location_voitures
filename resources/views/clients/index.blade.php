@@ -27,9 +27,14 @@
                 <td class="p-4 text-gray-600">{{ $client->license_number }}</td>
                 <td class="p-4 text-gray-600">{{ $client->city }}</td>
                 <td class="p-4">
+                    <div class="flex items-center gap-3">
                     <a href="{{ route('clients.show', $client->id) }}" class="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600">
                         Voir le dossier
                     </a>
+                    <a href="{{ route('clients.edit', $client->id) }}" class="bg-yellow-500 text-white px-4 py-2 rounded-lg hover:bg-yellow-600">
+                        Modifier
+                    </a>
+                </div>
                 </td>
             </tr>
             @endforeach

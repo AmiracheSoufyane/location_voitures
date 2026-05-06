@@ -16,9 +16,12 @@ class ReservationController extends Controller
      * Display a listing of the resource.
      */
     public function index()
-    {
-        //
-    }
+{
+    // On récupère les réservations avec les infos du client et de la voiture
+    // pour éviter le problème du "N+1 query"N
+    $reservations = Reservation::with(['client', 'car', 'user'])->latest()->get();
+    return view('reservations.index', compact('reservations'));
+}
 
     public function create()
     {
@@ -52,26 +55,43 @@ class ReservationController extends Controller
         return redirect()->route('reservations.index')->with('success', 'Contrat créé !');
     }
 
-        public function show(string $id)
+
+
+// Affiche le formulaire d'édition
+    public function edit(Reservation $reservation)
     {
-        //
+        // On a besoin de renvoyer la liste des clients et voitures pour les menus déroulants
+        $clients = Client::all();
+        $cars = Car::all();
+        
+        return view('reservations.edit', compact('reservation', 'clients', 'cars'));
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
+// Enregistre les modifications
+    public function update(Request $request, Reservation $reservation)
     {
-        //
+        $request->validate([
+            'client_id' => 'required|exists:clients,id',
+            'car_id' => 'required|exists:cars,id',
+            'date_start' => 'required|date',
+            'date_end' => 'required|date|after:date_start',
+            'price' => 'required|numeric|min:0',
+        ]);
+
+        // On met à jour les données
+        $reservation->update($request->all());
+
+        return redirect()->route('reservations.index')
+                        ->with('success', 'La réservation a été modifiée avec succès.');
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
+    public function show(Reservation $reservation)
+{
+    // On charge les relations pour afficher le nom du client, la marque de la voiture, etc.
+    $reservation->load(['client', 'car', 'user']);
+
+    return view('reservations.show', compact('reservation'));
+}
 
     /**
      * Remove the specified resource from storage.

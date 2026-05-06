@@ -46,6 +46,8 @@ Route::middleware('auth')->group(function () {
         Route::get('/clients', 'index')->name('clients.index');
         Route::get('/clients/create', 'create')->name('clients.create');
         Route::post('/clients', 'store')->name('clients.store');
+        Route::get('/clients/{client}/edit', 'edit')->name('clients.edit');
+        Route::put('/clients/{client}', 'update')->name('clients.update');
         Route::get('/clients/{id}', 'show')->name('clients.show');
     });
 
@@ -54,6 +56,9 @@ Route::middleware('auth')->group(function () {
         Route::get('/reservations', 'index')->name('reservations.index');
         Route::get('/reservations/create', 'create')->name('reservations.create');
         Route::post('/reservations', 'store')->name('reservations.store');
+        Route::get('/reservations/{id}', 'show')->name('reservations.show');
+        Route::get('/reservations/{reservation}/edit', 'edit')->name('reservations.edit');
+        Route::put('/reservations/{reservation}', 'update')->name('reservations.update');
     });
 
 });

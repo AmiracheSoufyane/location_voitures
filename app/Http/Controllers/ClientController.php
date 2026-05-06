@@ -66,4 +66,35 @@ class ClientController extends Controller
     return view('clients.show', compact('client'));
 }
 
-}
+    // Affiche le formulaire de modification
+    public function edit(Client $client)
+    {
+        return view('clients.edit', compact('client'));
+    }
+
+    // Enregistre les modifications
+    public function update(Request $request, Client $client)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'national_id' => 'required|string|unique:clients,national_id,' . $client->id,
+            'license_number' => 'required|string',
+            'city' => 'required|string',
+            // On ne rend pas les images obligatoires ici pour ne pas écraser les anciennes
+            'national_id_image_front' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+        ]);
+
+        $data = $request->all();
+
+        // Logique pour les nouvelles images (on ne remplace que si une nouvelle est uploadée)
+        if ($request->hasFile('national_id_image_front')) {
+            $imageName = time().'_front.'.$request->national_id_image_front->extension();
+            $request->national_id_image_front->move(public_path('uploads/clients'), $imageName);
+            $data['national_id_image_front'] = 'uploads/clients/'.$imageName;
+        }
+
+        $client->update($data);
+
+        return redirect()->route('clients.index')->with('success', 'Client mis à jour avec succès !');
+    }
+    }
