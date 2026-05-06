@@ -3,101 +3,144 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-// Les imports indispensables que j'avais oubliés :
 use App\Models\Reservation;
 use App\Models\Car;
 use App\Models\Client;
-use App\Models\User; 
 use Illuminate\Support\Facades\Auth;
 
 class ReservationController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * Liste des réservations avec optimisation des requêtes.
      */
     public function index()
+    {
+        $reservations = Reservation::with(['client', 'car', 'user'])->latest()->get();
+        return view('reservations.index', compact('reservations'));
+    }
+
+    /**
+     * API : Recherche dynamique des clients (Nom ou CIN).
+     */
+    public function searchClients(Request $request)
+    {
+        $search = $request->get('q');
+        return Client::where('name', 'LIKE', "%$search%")
+            ->orWhere('national_id', 'LIKE', "%$search%")
+            ->limit(10)
+            ->get(['id', 'name', 'national_id']);
+    }
+
+    /**
+     * API : Recherche dynamique des voitures disponibles.
+     */
+   public function searchCars(Request $request)
 {
-    // On récupère les réservations avec les infos du client et de la voiture
-    // pour éviter le problème du "N+1 query"N
-    $reservations = Reservation::with(['client', 'car', 'user'])->latest()->get();
-    return view('reservations.index', compact('reservations'));
+    $query = $request->get('q');
+    
+    // On cherche par marque ou modèle
+    $cars = Car::where('brand', 'LIKE', "%{$query}%")
+                ->orWhere('model', 'LIKE', "%{$query}%")
+                ->orWhere('registration', 'LIKE', "%{$query}%")
+                ->where('status', 'disponible') // Optionnel : seulement les dispo
+                ->get(['id', 'brand', 'model', 'registration', 'daily_price']);
+
+    return response()->json($cars);
+}
+    public function create()
+{
+    // On ne récupère plus tous les clients ici pour éviter l'erreur
+    $cars = Car::all(); 
+    return view('reservations.create', compact('cars'));
 }
 
-    public function create()
-    {
-        // On ne récupère que les voitures 'disponible'
-        $cars = Car::where('status', 'disponible')->get();
-        $clients = Client::all();
-
-        return view('reservations.create', compact('cars', 'clients'));
-    }
-
     public function store(Request $request)
-    {
-        $validated = $request->validate([
-            'client_id'    => 'required|exists:clients,id',
-            'car_id'      => 'required|exists:cars,id',
-            'date_start'  => 'required|date|after_or_equal:today',
-            'date_end'    => 'required|date|after:date_start',
-            'price'       => 'required|numeric',
-        ]);
+{
+        dd($request->all());
 
-        // Utilisation de Auth pour l'ID de l'employé connecté
-        $validated['user_id'] = Auth::id();
+    $validated = $request->validate([
+        'client_id' => 'required|exists:clients,id',
+        'car_id'    => 'required|exists:cars,id',
+        'date_start' => 'required|date|after_or_equal:today',
+        'date_end'   => 'required|date|after:date_start',
+        'price'      => 'required|numeric|min:0',
+    ]);
 
-        // Création de la réservation
-        $reservation = Reservation::create($validated);
+    $validated['user_id'] = Auth::id();
 
-        // Mise à jour du statut de la voiture
-        $car = Car::find($request->car_id);
-        $car->update(['status' => 'loué']);
+    // Vérification de collision des dates
+    $exists = Reservation::where('car_id', $request->car_id)
+        ->where(function ($query) use ($request) {
+            $query->where(function($q) use ($request) {
+                $q->whereBetween('date_start', [$request->date_start, $request->date_end])
+                  ->orWhereBetween('date_end', [$request->date_start, $request->date_end]);
+            })
+            ->orWhere(function($q) use ($request) {
+                $q->where('date_start', '<=', $request->date_start)
+                  ->where('date_end', '>=', $request->date_end);
+            });
+        })->exists();
 
-        return redirect()->route('reservations.index')->with('success', 'Contrat créé !');
+    if ($exists) {
+        return back()
+            ->withErrors(['car_id' => 'Ce véhicule est déjà réservé pour ces dates.'])
+            ->withInput(); // Très important pour garder les noms écrits
     }
 
+    $reservation = Reservation::create($validated);
 
+    // On met à jour le statut du véhicule
+    Car::where('id', $request->car_id)->update(['status' => 'loué']);
 
-// Affiche le formulaire d'édition
+    return redirect()->route('reservations.index')->with('success', 'Contrat créé avec succès !');
+}
     public function edit(Reservation $reservation)
     {
-        // On a besoin de renvoyer la liste des clients et voitures pour les menus déroulants
-        $clients = Client::all();
-        $cars = Car::all();
-        
-        return view('reservations.edit', compact('reservation', 'clients', 'cars'));
+        // On charge les relations actuelles pour les afficher par défaut dans le formulaire
+        $reservation->load(['client', 'car']);
+        return view('reservations.edit', compact('reservation'));
     }
 
-// Enregistre les modifications
     public function update(Request $request, Reservation $reservation)
     {
+        
         $request->validate([
             'client_id' => 'required|exists:clients,id',
-            'car_id' => 'required|exists:cars,id',
+            'car_id'    => 'required|exists:cars,id',
             'date_start' => 'required|date',
-            'date_end' => 'required|date|after:date_start',
-            'price' => 'required|numeric|min:0',
+            'date_end'   => 'required|date|after:date_start',
+            'price'      => 'required|numeric|min:0',
         ]);
 
-        // On met à jour les données
+        // LOGIQUE SI LA VOITURE CHANGE
+        if ($reservation->car_id !== $request->car_id) {
+            // 1. Libérer l'ancienne voiture
+            Car::where('id', $reservation->car_id)->update(['status' => 'disponible']);
+            // 2. Bloquer la nouvelle voiture
+            Car::where('id', $request->car_id)->update(['status' => 'loué']);
+        }
+
         $reservation->update($request->all());
 
-        return redirect()->route('reservations.index')
-                        ->with('success', 'La réservation a été modifiée avec succès.');
+        return redirect()->route('reservations.index')->with('success', 'La réservation a été modifiée.');
     }
 
-    public function show(Reservation $reservation)
+    public function show($id)
 {
-    // On charge les relations pour afficher le nom du client, la marque de la voiture, etc.
-    $reservation->load(['client', 'car', 'user']);
+    // On récupère la réservation avec ses relations
+    $reservation = Reservation::with(['client', 'car'])->findOrFail($id);
 
     return view('reservations.show', compact('reservation'));
 }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
+    public function destroy(Reservation $reservation)
     {
-        //
+        if ($reservation->car) {
+            $reservation->car->update(['status' => 'disponible']);
+        }
+
+        $reservation->delete();
+
+        return redirect()->route('reservations.index')->with('success', 'Réservation supprimée.');
     }
 }

@@ -24,7 +24,7 @@ class ClientController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'license_number' => 'required|unique:clients',
-            'national_id' => 'required|unique:clients',
+            'national_id' => 'required|unique:clients|max:10',
             'city' => 'required',
             'country' => 'required',
             'address' => 'required',
@@ -74,27 +74,55 @@ class ClientController extends Controller
 
     // Enregistre les modifications
     public function update(Request $request, Client $client)
-    {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'national_id' => 'required|string|unique:clients,national_id,' . $client->id,
-            'license_number' => 'required|string',
-            'city' => 'required|string',
-            // On ne rend pas les images obligatoires ici pour ne pas écraser les anciennes
-            'national_id_image_front' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
-        ]);
+{
+    // 1. Validation : 'unique' doit ignorer l'ID actuel du client pour ne pas bloquer
+    $validated = $request->validate([
+        'name' => 'required|string|max:255',
+        'license_number' => 'required|unique:clients,license_number,' . $client->id,
+        'national_id' => 'required|unique:clients,national_id,' . $client->id,
+        'city' => 'required',
+        'address' => 'required',
+        // Les images sont 'nullable' car on ne veut pas forcer l'upload à chaque modification
+        'license_image_front' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+        'license_image_back' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+        'national_id_image_front' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+        'national_id_image_back' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+    ]);
 
-        $data = $request->all();
+    // 2. Gestion des fichiers (Seulement si un nouveau fichier est envoyé)
+    $fields = ['license_image_front', 'license_image_back', 'national_id_image_front', 'national_id_image_back'];
+    
+    foreach ($fields as $field) {
+        if ($request->hasFile($field)) {
+            // Optionnel : Supprimer l'ancienne image physiquement ici pour gagner de la place
+            $filename = time() . '_' . $field . '.' . $request->$field->extension();
+            $request->$field->move(public_path('uploads/clients'), $filename);
+            $validated[$field] = $filename;
+        } else {
+            // Si pas de nouveau fichier, on retire le champ pour ne pas écraser par du vide
+            unset($validated[$field]);
+        }
+    }
 
-        // Logique pour les nouvelles images (on ne remplace que si une nouvelle est uploadée)
-        if ($request->hasFile('national_id_image_front')) {
-            $imageName = time().'_front.'.$request->national_id_image_front->extension();
-            $request->national_id_image_front->move(public_path('uploads/clients'), $imageName);
-            $data['national_id_image_front'] = 'uploads/clients/'.$imageName;
+    $client->update($validated);
+
+    return redirect()->route('clients.index')->with('success', 'Informations du client mises à jour !');
+}
+
+    public function destroy(Client $client)
+{
+        // Sécurité : on vérifie si le client a des réservations en cours
+        if ($client->reservations()->count() > 0) {
+            return redirect()->route('clients.index')
+                            ->with('error', 'Impossible de supprimer ce client car il possède des réservations actives.');
         }
 
-        $client->update($data);
+        // Suppression des images (facultatif mais propre)
+        // Tu peux ajouter ici la logique pour supprimer les fichiers dans public/uploads/clients/
 
-        return redirect()->route('clients.index')->with('success', 'Client mis à jour avec succès !');
-    }
-    }
+        $client->delete();
+
+        return redirect()->route('clients.index')
+                        ->with('success', 'Le client a été supprimé avec succès.');
+}
+}

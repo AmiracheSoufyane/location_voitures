@@ -34,6 +34,13 @@
                     <a href="{{ route('clients.edit', $client->id) }}" class="bg-yellow-500 text-white px-4 py-2 rounded-lg hover:bg-yellow-600">
                         Modifier
                     </a>
+                    <form action="{{ route('clients.destroy', $client->id) }}" method="POST" onsubmit="return confirm('Voulez-vous vraiment supprimer ce client ?');">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="p-2 bg-red-500 text-white rounded hover:bg-red-600 transition-colors">
+                            <i data-lucide="trash-2" class="w-4 h-4"></i>
+                        </button>
+                    </form>
                 </div>
                 </td>
             </tr>

@@ -5,8 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard</title>
     @vite(['resources/css/app.css','resources/js/app.js'])
-    <!-- Script pour les icônes -->
+    <!-- Tes scripts globaux (Lucide, Alpine, etc.) -->
     <script src="https://unpkg.com/lucide@latest"></script>
+    <script>lucide.createIcons();</script>
+
+    @stack('scripts') {{-- <-- Cette ligne est magique --}}
+</body>
+</html>
 </head>
 
 <body class="bg-gray-100">
@@ -85,6 +90,30 @@
 
     <!-- MAIN -->
     <main class="flex-1 p-6 ml-0 md:ml-64">
+        <!-- btn success -->
+
+        @if(session('success'))
+            <div class="max-w-4xl mx-auto mt-4">
+                <div class="flex items-center gap-3 bg-green-100 border border-green-200 text-green-700 px-4 py-3 rounded-xl shadow-sm">
+                    <i data-lucide="check-circle" class="w-5 h-5"></i>
+                    <span class="font-medium">{{ session('success') }}</span>
+                    
+                    <button onclick="this.parentElement.remove()" class="ml-auto text-green-500 hover:text-green-700">
+                        <i data-lucide="x" class="w-4 h-4"></i>
+                    </button>
+                </div><br>
+            </div>
+            
+        @endif
+        @if(session('error'))
+            <div class="max-w-4xl mx-auto mt-4">
+                <div class="flex items-center gap-3 bg-red-100 border border-red-200 text-red-700 px-4 py-3 rounded-xl shadow-sm">
+                    <i data-lucide="alert-circle" class="w-5 h-5"></i>
+                    <span class="font-medium">{{ session('error') }}</span>
+                </div>
+            </div><br>
+            
+        @endif
         @yield('content')
     </main>
 
@@ -103,7 +132,10 @@
         const menu = document.getElementById('personnesMenu');
         menu.classList.toggle('hidden');
     }
+
+    
 </script>
+    
 
 </body>
 </html>

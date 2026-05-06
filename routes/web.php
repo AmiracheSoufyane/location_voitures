@@ -49,16 +49,23 @@ Route::middleware('auth')->group(function () {
         Route::get('/clients/{client}/edit', 'edit')->name('clients.edit');
         Route::put('/clients/{client}', 'update')->name('clients.update');
         Route::get('/clients/{id}', 'show')->name('clients.show');
+        Route::delete('/clients/{client}', 'destroy')->name('clients.destroy');
     });
 
-    // Gestion des Réservations
+    // Gestion des Réservations + API de recherche
     Route::controller(ReservationController::class)->group(function () {
+        // Routes standards
         Route::get('/reservations', 'index')->name('reservations.index');
         Route::get('/reservations/create', 'create')->name('reservations.create');
         Route::post('/reservations', 'store')->name('reservations.store');
         Route::get('/reservations/{id}', 'show')->name('reservations.show');
         Route::get('/reservations/{reservation}/edit', 'edit')->name('reservations.edit');
         Route::put('/reservations/{reservation}', 'update')->name('reservations.update');
+        Route::delete('/reservations/{reservation}', 'destroy')->name('reservations.destroy');
+
+        // Routes API pour l'Autocomplete (Celles-ci sont cruciales !)
+        Route::get('/api/search-clients', 'searchClients')->name('api.clients.search');
+        Route::get('/api/search-cars', 'searchCars')->name('api.cars.search');
     });
 
 });
