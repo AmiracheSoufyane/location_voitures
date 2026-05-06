@@ -8,17 +8,14 @@
 
         <div>
             <h1 class="text-3xl font-extrabold text-gray-900 tracking-tight flex items-center gap-2">
-                🚗 Voitures nécessitant maintenance
+                <i data-lucide="car" class="w-10 h-10"></i>
+                 Les voitures nécessitent une vidange urgente
 
-                @if($cars->count() > 0)
-                    <span class="bg-red-500 text-white text-xs px-3 py-1 rounded-full">
-                        {{ $cars->count() }}
-                    </span>
-                @endif
+                
             </h1>
 
             <p class="text-gray-500 mt-1">
-                Liste des véhicules ayant dépassé le seuil de maintenance
+                Liste des véhicules ayant dépassé le seuil de vidange
             </p>
         </div>
 
@@ -44,7 +41,7 @@
 
                     <thead>
                         <tr class="bg-gray-50 border-b border-gray-100 text-xs uppercase text-gray-400">
-                            <th class="px-6 py-4 text-center">Image</th>
+                            <th class="px-6 py-4 text-center">Date</th>
                             <th class="px-6 py-4">Marque</th>
                             <th class="px-6 py-4">Modèle</th>
                             <th class="px-6 py-4">Année</th>
@@ -62,13 +59,13 @@
 
                                 <!-- IMAGE -->
                                 <td class="px-6 py-4 text-center">
-                                    @if($car->image)
-                                        <img src="{{ Storage::url($car->image) }}"
-                                             class="w-14 h-10 object-cover rounded-lg mx-auto shadow-sm">
-                                    @else
-                                        <div class="w-14 h-10 bg-gray-200 rounded-lg mx-auto"></div>
-                                    @endif
-                                </td>
+    <div class="text-sm font-semibold text-gray-700">
+        {{ $car->notifications->last()?->created_at->format('d/m/Y') }}
+    </div>
+    <div class="text-xs text-gray-500">
+        {{ $car->notifications->last()?->created_at->format('H:i') }}
+    </div>
+</td>
 
                                 <!-- DATA -->
                                 <td class="px-6 py-4 font-semibold">{{ $car->brand }}</td>
@@ -94,8 +91,8 @@
                                 <!-- ACTION -->
                                 <td class="px-6 py-4 text-center">
                                     <a href="{{ route('maintenance.create', $car->id) }}"
-                                       class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg text-xs font-bold shadow">
-                                        🔧 Maintenance
+                                       class="bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded-lg text-xs font-bold shadow">
+                                         Maintenance
                                     </a>
                                 </td>
 

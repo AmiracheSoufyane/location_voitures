@@ -19,12 +19,14 @@ class Car extends Model
     'price_per_day',
     'image',
     'rest',
+    'en_panne',
     'maintenance_needed'
     ];
 
-    public function notifications(){
-        return $this->hasMany(Notification::class,'car_id');
-    }
+    public function notifications()
+{
+    return $this->hasMany(Notification::class)->orderBy('created_at', 'asc');
+}
     public function maintenances(){
         return $this->hasMany(Maintenance::class,'car_id');
     }

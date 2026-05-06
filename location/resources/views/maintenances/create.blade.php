@@ -78,13 +78,12 @@
                     <label class="block text-sm font-bold text-gray-700 mb-2 uppercase tracking-wide">Kilométrage</label>
                     <div class="relative group">
                         <input 
-                            type="number" 
-                            name="mileage" 
-                            value="{{ old('mileage') }}"
-                            class="w-full pl-4 pr-12 py-3 rounded-xl transition-all duration-200 outline-none border
-                            @error('mileage') border-red-500 bg-red-50 focus:ring-red-200 @else border-gray-200 bg-gray-50 focus:bg-white focus:ring-blue-500/10 focus:border-blue-500 @enderror"
-                            placeholder="Ex: 150000"
-                        >
+    type="number" 
+    name="mileage" 
+    value="{{ $car->mileage }}"
+    readonly
+    class="w-full pl-4 pr-12 py-3 rounded-xl border border-gray-200 bg-gray-100 text-gray-700 cursor-not-allowed"
+/>
                         <span class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 font-medium @error('mileage') text-red-400 @else group-focus-within:text-blue-600 @enderror">Km</span>
                     </div>
                     @error('mileage')

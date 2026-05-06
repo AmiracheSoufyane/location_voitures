@@ -50,16 +50,16 @@ class MaintenancesController extends Controller
 
         $car = Car::findOrFail($req->car_id);
 
-        // Supprimer toutes les notifications liées à cette voiture
-        Notification::where('car_id', $car->id)->delete();
+Notification::where('car_id', $car->id)->delete();
 
-        // Réinitialiser le compteur
-        $car->rest = 0;
+$car->update([
+    'en_panne' => false,
+    'rest' => 0,
+    
+    'status' => 'disponible',
+]);
 
-        // Remettre le statut à disponible
-        $car->status = 'disponible';
-
-        $car->save();
+        
 
         return redirect()->route('maintenance.index', $req->car_id)
             ->with('success', 'Maintenance ajoutée avec succès et notification supprimée');

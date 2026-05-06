@@ -132,19 +132,19 @@ public function update(Request $req, string $id)
     ]);
 
     // تحديث rest
-    $newRest = $car->rest + $diff;
-    $data['rest'] = $newRest;
+   $newRest = $car->rest + $diff;
+$data['rest'] = $newRest;
+// 🔥 التحقق من الحاجة للصيانة
+if ($newRest >= 10000 && !$car->en_panne) {
 
-    // 🔥 التحقق من الحاجة للصيانة (بدون شرط alreadyNotified)
-    if ($newRest >= 10) {
-        // نضيف notification دائمًا بدون شرط
-        Notification::create([
-            'note' => 'Maintenance requise pour la voiture ' . $car->registration,
-            'car_id' => $car->id,
-        ]);
-        
-        $data['status'] = 'maintenance';
-    }
+    Notification::create([
+        'note' => 'Maintenance requise pour la voiture ' . $car->registration,
+        'car_id' => $car->id,
+    ]);
+
+    $data['en_panne'] = true; 
+    $data['status'] = 'maintenance';
+}
 
     // باقي الكود (الصورة...)
     if($req->hasFile('image')){

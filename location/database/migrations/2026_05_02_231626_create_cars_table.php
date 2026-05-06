@@ -20,6 +20,7 @@ return new class extends Migration
             $table->enum('status', ['disponible', 'loué', 'maintenance']);
             $table->decimal('price_per_day', 10, 2); 
             $table->text('comment')->nullable();   // commentaire
+            $table->boolean('en_panne')->default(false);
             $table->string('image', 255)->nullable(); // image
 
 

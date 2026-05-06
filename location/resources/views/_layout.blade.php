@@ -6,6 +6,38 @@
     <title>Dashboard</title>
 
     @vite(['resources/css/app.css','resources/js/app.js'])
+
+    <style>
+     .notification-bell {
+    position: fixed;
+    bottom: 20px;
+    right: 25px;   /* 👈 أقصى اليمين ديال الشاشة */
+    width: 60px;
+    height: 60px;
+    background: #fff;
+    border-radius: 50%;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 99999;
+}
+
+.notification-bell i {
+    font-size: 22px;
+}
+
+.notification-bell .badge {
+    position: absolute;
+    top: 0;
+    right: 0;
+    background: red;
+    color: white;
+    font-size: 10px;
+    border-radius: 50%;
+    padding: 3px 6px;
+}
+    </style>
 </head>
 
 <body class="bg-gray-100">
@@ -67,7 +99,7 @@
                 <i data-lucide="car"></i>
                 Véhicule
             </a>
-             <a href="{{route('cars.maintenance')}}" class="flex items-center gap-3 p-2 rounded hover:bg-gray-700 mt-4" >mintenence needing</a>
+             
 
                 <form action="{{route('logout')}}" method='POST' >
                     @csrf
@@ -96,6 +128,12 @@
         @yield('content')
     </main>
 
+</div>
+<div class="notification-bell">
+    <a href="{{route('cars.maintenance')}}">
+        <i data-lucide="bell"></i>
+       <span class="badge">{{ $notifCount }}</span>
+    </a>
 </div>
 
 </body>
